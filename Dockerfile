@@ -11,16 +11,12 @@ RUN apt-get update && \
     rm -f cloudflared.deb && \
     mkdir -p /media/gdrive /config/rclone /config/cloudflared
 
-# Copy Rclone config and Cloudflare tunnel credentials
-COPY config/rclone.conf /config/rclone/rclone.conf
-COPY config/tunnel.json /config/cloudflared/tunnel.json
-
 # Environment variables
-ENV RCLONE_CONFIG=/config/rclone/rclone.conf
-ENV TUNNEL_NAME=mytunnel
 ENV MOUNT_DIR=/media/gdrive
+ENV TUNNEL_NAME=mytunnel
 
-# Startup script
-CMD rclone mount gdrive:/ "$MOUNT_DIR" --allow-other --vfs-cache-mode full --dir-cache-time 1h & \
-    cloudflared tunnel --credentials-file /config/cloudflared/tunnel.json run "$TUNNEL_NAME" & \
-    /jellyfin/jellyfin
+# Copy startup script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
